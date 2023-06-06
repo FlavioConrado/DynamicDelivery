@@ -13,44 +13,44 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.drsync.movieapp.databinding.ActivityMainBinding
-import com.google.android.play.core.splitinstall.SplitInstallManager
-import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
-import com.google.android.play.core.splitinstall.SplitInstallRequest
-import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
-import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
+import com.jeppeman.globallydynamic.globalsplitinstall.GlobalSplitInstallManager
+import com.jeppeman.globallydynamic.globalsplitinstall.GlobalSplitInstallManagerFactory
+import com.jeppeman.globallydynamic.globalsplitinstall.GlobalSplitInstallRequest
+import com.jeppeman.globallydynamic.globalsplitinstall.GlobalSplitInstallSessionStatus
+import com.jeppeman.globallydynamic.globalsplitinstall.GlobalSplitInstallUpdatedListener
 
 class MainActivity : AppCompatActivity(){
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
-    private lateinit var manager: SplitInstallManager
+    private lateinit var globalSplitInstallManager: GlobalSplitInstallManager
     private val listener2 =
-        SplitInstallStateUpdatedListener { state ->
+        GlobalSplitInstallUpdatedListener { state ->
             val multiInstall = state.moduleNames().size > 1
             val names = state.moduleNames().joinToString(" - ")
             Log.i(this::class.java.simpleName, "names=$names")
             Log.i(this::class.java.simpleName, "multiInstall=$multiInstall")
             when (state.status()) {
-                SplitInstallSessionStatus.DOWNLOADING -> {
+                GlobalSplitInstallSessionStatus.DOWNLOADING -> {
                     Log.i(this::class.java.simpleName, "DOWNLOADING")
                     Toast.makeText(this, "Downloading a module", Toast.LENGTH_LONG)
                 }
-                SplitInstallSessionStatus.DOWNLOADED -> {
+                GlobalSplitInstallSessionStatus.DOWNLOADED -> {
                     Log.i(this::class.java.simpleName, "DOWNLOADED")
                 }
-                SplitInstallSessionStatus.INSTALLING -> {
+                GlobalSplitInstallSessionStatus.INSTALLING -> {
                     Log.i(this::class.java.simpleName, "INSTALLING")
                 }
-                SplitInstallSessionStatus.PENDING -> {
+                GlobalSplitInstallSessionStatus.PENDING -> {
                     Log.i(this::class.java.simpleName, "PENDING")
                 }
-                SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
+                GlobalSplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
                     Log.i(this::class.java.simpleName, "REQUIRES_USER_CONFIRMATION")
                 }
-                SplitInstallSessionStatus.INSTALLED -> {
+                GlobalSplitInstallSessionStatus.INSTALLED -> {
                     Log.i(this::class.java.simpleName, "INSTALLED")
                 }
-                SplitInstallSessionStatus.UNKNOWN -> {
+                GlobalSplitInstallSessionStatus.UNKNOWN -> {
                     Log.i(this::class.java.simpleName, "UNKNOWN")
                 }
             }
@@ -61,11 +61,7 @@ class MainActivity : AppCompatActivity(){
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        manager = SplitInstallManagerFactory.create(this)
-
-        manager.installedModules.forEach { installedModule ->
-            Log.i(this::class.java.simpleName, installedModule)
-        }
+        globalSplitInstallManager = GlobalSplitInstallManagerFactory.create(this)
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.findNavController()
@@ -88,19 +84,19 @@ class MainActivity : AppCompatActivity(){
         return when (item.itemId){
             R.id.nav_add_module -> {
 
-                val request = SplitInstallRequest.newBuilder()
+                val request = GlobalSplitInstallRequest.newBuilder()
                     .addModule("favorite")
                     .build()
 
                 Log.i(this::class.java.simpleName, "requesting favorite module download")
-                manager.startInstall(request)
+                globalSplitInstallManager.startInstall(request)
 
                 true
             }
             R.id.nav_remove_module -> {
-                val modules = manager.installedModules.toList()
+                val modules = globalSplitInstallManager.installedModules.toList()
                 Log.i(this::class.java.simpleName, "requesting favorite module uninstall. modules to be uninstalled: $modules")
-                manager.deferredUninstall(manager.installedModules.toList())
+                globalSplitInstallManager.deferredUninstall(globalSplitInstallManager.installedModules.toList())
 
                 true
             }
@@ -112,8 +108,8 @@ class MainActivity : AppCompatActivity(){
 
     override fun onResume() {
 
-        manager.registerListener(listener2)
-        manager.installedModules.forEach { installedModule ->
+        globalSplitInstallManager.registerListener(listener2)
+        globalSplitInstallManager.installedModules.forEach { installedModule ->
             Log.i(this::class.java.simpleName, "installed module: $installedModule")
         }
 
@@ -121,7 +117,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     override fun onPause() {
-        manager.unregisterListener(listener2)
+        globalSplitInstallManager.unregisterListener(listener2)
 
         super.onPause()
     }
