@@ -11,6 +11,8 @@
     <string name="menu_movie">Movie</string>
     <string name="menu_map">Maps</string>
     <string name="menu_favorite">Favorite</string>
+    <string name="menu_add_module">Add module</string>
+    <string name="menu_remove_module">Uninstall module</string>
 
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
